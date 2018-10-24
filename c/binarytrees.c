@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
     unsigned   N, depth, minDepth, maxDepth, stretchDepth;
     treeNode   *stretchTree, *longLivedTree, *tempTree;
 
-    N = atol(argv[1]);
+    N = 21;//atol(argv[1]);
 
     minDepth = 4;
 
