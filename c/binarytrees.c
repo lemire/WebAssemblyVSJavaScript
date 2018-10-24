@@ -9,13 +9,23 @@
 
    *reset*
 */
+/* The Computer Language Benchmarks Game
+ * https://salsa.debian.org/benchmarksgame-team/benchmarksgame/
+
+   contributed by Kevin Carson
+   compilation:
+       gcc -O3 -fomit-frame-pointer -funroll-loops -static binary-trees.c -lm
+       icc -O3 -ip -unroll -static binary-trees.c -lm
+
+   *reset*
+*/
 
 #include <malloc.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <emscripten/emscripten.h>
-#include <string.h>
+
+
 typedef struct tn {
     struct tn*    left;
     struct tn*    right;
@@ -68,20 +78,14 @@ void DeleteTree(treeNode* tree)
     free(tree);
 } /* DeleteTree() */
 
-/*int main() {
-    printf("WebAssembly binarytrees module loaded\n");
-    return 0;
-}*/
 
-int EMSCRIPTEN_KEEPALIVE binarytrees ()
+int main(int argc, char* argv[])
 {
-    //clock_t begin;
-    //begin = clock();
-    
     unsigned   N, depth, minDepth, maxDepth, stretchDepth;
     treeNode   *stretchTree, *longLivedTree, *tempTree;
 
-    N = atol("21");
+    N = atol(argv[1]);
+
     minDepth = 4;
 
     if ((minDepth + 2) > N)
@@ -92,18 +96,17 @@ int EMSCRIPTEN_KEEPALIVE binarytrees ()
     stretchDepth = maxDepth + 1;
 
     stretchTree = BottomUpTree(stretchDepth);
-    //char*  step1 = ""; 
     printf
-    (   //step1,
+    (
         "stretch tree of depth %u\t check: %li\n",
         stretchDepth,
         ItemCheck(stretchTree)
     );
-    
+
     DeleteTree(stretchTree);
 
     longLivedTree = BottomUpTree(maxDepth);
-    //char* step2 = "";
+
     for (depth = minDepth; depth <= maxDepth; depth += 2)
     {
         long    i, iterations, check;
@@ -118,26 +121,22 @@ int EMSCRIPTEN_KEEPALIVE binarytrees ()
             check += ItemCheck(tempTree);
             DeleteTree(tempTree);
         } /* for(i = 1...) */
+
         printf
-        (   //step2,
+        (
             "%li\t trees of depth %u\t check: %li\n",
             iterations,
             depth,
             check
         );
     } /* for(depth = minDepth...) */
-    //char* step3 ="";
+
     printf
-    (   //step3,
+    (
         "long lived tree of depth %u\t check: %li\n",
         maxDepth,
         ItemCheck(longLivedTree)
     );
-    //clock_t end = clock();
-    //double time_taken = ((double)(end - begin))/CLOCKS_PER_SEC; // in seconds
-    //char* step = (char*) malloc(strlen(step1) + strlen(step2) + strlen(step3) + 1);
-    //strcpy(step,step1);
-    //strcat(step,step2);
-    //strcat(step,step3);
+
     return 0;
-}
+} /* main() */
