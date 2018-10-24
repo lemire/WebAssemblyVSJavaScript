@@ -32,6 +32,7 @@ Ideally memory usage, file sizes and different environments should be included i
 
 ## References
 
-- Haas et al., Bringing the Web up to Speed with WebAssembly, PLDI'17
-- Herrera et al., WebAssembly and JavaScript Challenge: Numerical program performance using modern browser technologies and devices, 2018
-
+- Egorov, [Maybe you don't need Rust and WASM to speed up your JS](https://mrale.ph/blog/2018/02/03/maybe-you-dont-need-rust-to-speed-up-your-js.html)
+- Haas et al., [Bringing the Web up to Speed with WebAssembly](ttps://www.cs.tufts.edu/~nr/cs257/archive/andreas-rossberg/webassembly.pdf), PLDI'17
+- Herrera et al., [WebAssembly and JavaScript Challenge: Numerical program performance using modern browser technologies and devices](http://www.sable.mcgill.ca/publications/techreports/2018-2/techrep.pdf), 2018
+- Lemire, [Is WebAssembly faster than JavaScript?](https://lemire.me/blog/2018/10/23/is-webassembly-faster-than-javascript/)
