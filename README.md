@@ -28,3 +28,10 @@ Ideally memory usage, file sizes and different environments should be included i
 ## Outstanding problems
 
 - The fasta test is problematic since it implies outputting a large volume of data to the standard output. It is likely to become a limiting factor. In JavaScript, we can use a buffered output. For the C version, we need some fast print-out approach.
+
+
+## References
+
+- Haas et al., Bringing the Web up to Speed with WebAssembly, PLDI'17
+- Herrera et al., WebAssembly and JavaScript Challenge: Numerical program performance using modern browser technologies and devices, 2018
+
