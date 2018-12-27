@@ -1,61 +1,96 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<emscripten/emscripten.h>
+// The Computer Language Benchmarks Game
+// https://salsa.debian.org/benchmarksgame-team/benchmarksgame/
+//
+// Contributed by Jeremy Zerfas
 
-int EMSCRIPTEN_KEEPALIVE mandelbrot ()
-{
-    int w, h, bit_num = 0;
-    char byte_acc = 0;
-    int i, iter = 50;
-    double x, y, limit = 4;
-    double Zr, Zi, Cr, Ci, Tr, Ti;
-    
-    w = h = 16000;
+// This is the square of the limit that pixels will need to exceed in order to
+// escape from the Mandelbrot set.
+#define LIMIT_SQUARED      4.0
+// This controls the maximum amount of iterations that are done for each pixel.
+#define MAXIMUM_ITERATIONS   50
 
-    printf("P4\n%d %d\n",w,h);
-    
-    char * buffer = malloc((w / 8  + 1)* sizeof(char));
-    
-    for(y=0;y<h;++y) 
-    {
-        int pos = 0;
-        for(x=0;x<w;++x)
-        {
-            Zr = Zi = Tr = Ti = 0.0;
-            Cr = (2.0*x/w - 1.5); Ci=(2.0*y/h - 1.0);
-        
-            for (i=0;i<iter && (Tr+Ti <= limit*limit);++i)
-            {
-                Zi = 2.0*Zr*Zi + Ci;
-                Zr = Tr - Ti + Cr;
-                Tr = Zr * Zr;
-                Ti = Zi * Zi;
-            }
-       
-            byte_acc <<= 1; 
-            if(Tr+Ti <= limit*limit) byte_acc |= 0x01;
-                
-            ++bit_num; 
+#include <stdint.h>
+#include <stdlib.h>
+#include <stdio.h>
 
-            if(bit_num == 8)
-            {
-                buffer[pos++] = byte_acc;
-                //putc(byte_acc,stdout);
-                byte_acc = 0;
-                bit_num = 0;
+// intptr_t should be the native integer type on most sane systems.
+typedef intptr_t intnative_t;
+
+int main(int argc, char ** argv){
+   int size = 16000;
+   if(argc > 1) size = atoi(argv[1]);
+   // Ensure image_Width_And_Height are multiples of 8.
+   const intnative_t image_Width_And_Height=(size+7)/8*8;
+
+   // The image will be black and white with one bit for each pixel. Bits with
+   // a value of zero are white pixels which are the ones that "escape" from
+   // the Mandelbrot set. We'll be working on one line at a time and each line
+   // will be made up of pixel groups that are eight pixels in size so each
+   // pixel group will be one byte. This allows for some more optimizations to
+   // be done.
+   uint8_t * const pixels=malloc(image_Width_And_Height*
+     image_Width_And_Height/8);
+
+   // Precompute the initial real and imaginary values for each x and y
+   // coordinate in the image.
+   double initial_r[image_Width_And_Height], initial_i[image_Width_And_Height];
+   for(intnative_t xy=0; xy<image_Width_And_Height; xy++){
+      initial_r[xy]=2.0/image_Width_And_Height*xy - 1.5;
+      initial_i[xy]=2.0/image_Width_And_Height*xy - 1.0;
+   }
+
+   for(intnative_t y=0; y<image_Width_And_Height; y++){
+      const double prefetched_Initial_i=initial_i[y];
+      for(intnative_t x_Major=0; x_Major<image_Width_And_Height; x_Major+=8){
+
+         // pixel_Group_r and pixel_Group_i will store real and imaginary
+         // values for each pixel in the current pixel group as we perform
+         // iterations. Set their initial values here.
+         double pixel_Group_r[8], pixel_Group_i[8];
+         for(intnative_t x_Minor=0; x_Minor<8; x_Minor++){
+            pixel_Group_r[x_Minor]=initial_r[x_Major+x_Minor];
+            pixel_Group_i[x_Minor]=prefetched_Initial_i;
+         }
+
+         // Assume all pixels are in the Mandelbrot set initially.
+         uint8_t eight_Pixels=0xff;
+
+         intnative_t iteration=MAXIMUM_ITERATIONS;
+         do{
+            uint8_t current_Pixel_Bitmask=0x80;
+            for(intnative_t x_Minor=0; x_Minor<8; x_Minor++){
+               const double r=pixel_Group_r[x_Minor];
+               const double i=pixel_Group_i[x_Minor];
+
+               pixel_Group_r[x_Minor]=r*r - i*i +
+                 initial_r[x_Major+x_Minor];
+               pixel_Group_i[x_Minor]=2.0*r*i + prefetched_Initial_i;
+
+               // Clear the bit for the pixel if it escapes from the
+               // Mandelbrot set.
+               if(r*r + i*i>LIMIT_SQUARED)
+                  eight_Pixels&=~current_Pixel_Bitmask;
+
+               current_Pixel_Bitmask>>=1;
             }
-            else if(x == w-1)
-            {
-                byte_acc <<= (8-w%8);
-                //putc(byte_acc,stdout);
-                buffer[pos++] = byte_acc;
-                byte_acc = 0;
-                bit_num = 0;
-            }
-        }
-        buffer[pos++] = '\0';
-        printf("%.*s",pos,buffer);
-    }
-    free(buffer);
-  return 0; 	
+         }while(eight_Pixels && --iteration);
+
+         pixels[y*image_Width_And_Height/8 + x_Major/8]=eight_Pixels;
+      }
+   }
+
+   // Output the image to stdout.
+   //fprintf(stdout, "P4\n%jd %jd\n", (intmax_t)image_Width_And_Height,
+   //  (intmax_t)image_Width_And_Height);
+   //fwrite(pixels, image_Width_And_Height*image_Width_And_Height/8, 1, stdout);
+   for(size_t i = 0; i < image_Width_And_Height*image_Width_And_Height; i++) {
+       if(pixels[i] != 0) {
+           printf("pixels[%zu] = %d\n", i, pixels[i]);
+           break;
+       }
+   }
+
+   free(pixels);
+
+   return 0;
 }

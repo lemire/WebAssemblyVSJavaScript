@@ -1,3 +1,7 @@
+/* The Computer Language Benchmarks Game
+ * http://benchmarksgame.alioth.debian.org/
+ */
+
 function compute(d) {
 
     var start = 0, // incl
@@ -34,13 +38,14 @@ function compute(d) {
             }
         }
     })();
-   // console.log(buff);
-    console.log('Fin du traitement');
+    for(var i = 0; i < d * d; i++) {
+        if(buff[i] != 0) {
+            console.log("buff["+i+"] = "+buff[i]);
+            break;
+        }
+    }
 }
-function runmandelbrotJS(){
-const d = 16000;
-compute(d);
-}
+
 
 function doCalc(Cr, Ci) {
     var Zr = 0,
@@ -57,3 +62,10 @@ function doCalc(Cr, Ci) {
     }
     return Tr + Ti;
 };
+
+function runmandelbrotJS() {
+    const d = 16000;
+    console.log("d = " + 16000)
+    compute(d);
+}
+runmandelbrotJS()

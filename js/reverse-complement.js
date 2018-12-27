@@ -1,10 +1,14 @@
+/* The Computer Language Benchmarks Game
+ * http://benchmarksgame.alioth.debian.org/
+ */
+
 const stdout = process.stdout;
 const stdin = process.stdin;
 
 const READ_SIZE = 16000;
 var buf = Buffer.alloc(READ_SIZE + READ_SIZE / 61 | 0);
 const writeBuffer = buf;
-const smap = [,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,84,86,71,72,,,67,68,,,77,,75,78,,,,89,83,65,65,66,87,,82,,,,,,,,84,86,71,72,,,67,68,,,77,,75,78,,,,89,83,65,65,66,87,,82];
+const smap = [, , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , 84, 86, 71, 72, , , 67, 68, , , 77, , 75, 78, , , , 89, 83, 65, 65, 66, 87, , 82, , , , , , , , 84, 86, 71, 72, , , 67, 68, , , 77, , 75, 78, , , , 89, 83, 65, 65, 66, 87, , 82];
 
 let metaI;
 let numLines;
@@ -176,4 +180,3 @@ function read() {
 
 
 stdin.on('readable', read);
-
